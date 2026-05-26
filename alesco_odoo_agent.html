@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alesco × Odoo Agent</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #090912;
+    --bg2: #0c0c1a;
+    --bg3: #0e0e1e;
+    --border: #181828;
+    --text: #c0c8e8;
+    --text2: #8090b0;
+    --text3: #404868;
+    --live: #EF4444;
+    --guide: #3B82F6;
+    --dev: #8B5CF6;
+    --log: #F59E0B;
+    --team: #10B981;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', 'Courier New', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Header */
+  .header { padding: 10px 18px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#1a3060,#2a1a50); border: 1px solid #2a3060; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .header-info { flex: 1; }
+  .header-title { font-weight: 700; font-size: 13px; color: #c8d8ff; letter-spacing: 1px; }
+  .header-sub { font-size: 10px; color: var(--text3); letter-spacing: 0.5px; }
+  .status { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+  
+  /* Modes */
+  .modes { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); overflow-x: auto; }
+  .mode-btn { flex: 1; min-width: 90px; padding: 9px 6px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text3); font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.15s; font-family: inherit; }
+  .mode-btn.active { background: var(--bg2); color: #e0e8ff; }
+  .mode-btn span:first-child { font-size: 15px; }
+
+  /* Chat */
+  .chat { flex: 1; overflow-y: auto; padding: 14px 18px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .chat::-webkit-scrollbar { width: 3px; }
+  .chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  
+  .msg-row { display: flex; gap: 10px; margin-bottom: 18px; align-items: flex-start; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-avatar { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 2px; }
+  .msg-bubble { max-width: 88%; padding: 10px 14px; border-radius: 12px 12px 12px 4px; border: 1px solid var(--border); background: var(--bg3); font-size: 13px; line-height: 1.7; }
+  .msg-row.user .msg-bubble { border-radius: 12px 12px 4px 12px; max-width: 65%; }
+
+  /* Table */
+  .data-table { overflow-x: auto; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { padding: 6px 10px; background: #0a0a14; color: var(--text2); text-align: left; font-weight: 600; font-size: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 6px 10px; color: var(--text); border-bottom: 1px solid #141420; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  tr:nth-child(even) { background: #0b0b16; }
+  .data-label { color: var(--text3); font-size: 10px; margin-bottom: 6px; }
+
+  /* Typing */
+  .typing { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
+
+  /* Quick actions */
+  .quick-actions { margin-top: 10px; }
+  .quick-label { font-size: 9px; color: #282840; margin-bottom: 8px; letter-spacing: 1px; }
+  .quick-btn { display: flex; align-items: center; gap: 8px; width: 100%; background: #0b0b18; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text3); font-size: 12px; cursor: pointer; text-align: left; transition: all 0.15s; margin-bottom: 5px; font-family: inherit; }
+  .quick-btn:hover { background: #0f0f22; color: #8090c0; }
+  .quick-arrow { font-size: 14px; }
+
+  /* Input */
+  .input-area { padding: 10px 14px 14px; border-top: 1px solid var(--border); background: var(--bg); display: flex; gap: 8px; align-items: flex-end; }
+  textarea { flex: 1; background: #0c0c1a; border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 12px; outline: none; resize: none; font-family: inherit; line-height: 1.5; transition: border 0.2s; }
+  textarea:focus { border-color: #3a3a6a; }
+  textarea::placeholder { color: #282840; }
+  .send-btn { width: 40px; height: 40px; border-radius: 9px; border: none; background: #141424; color: #303050; cursor: default; font-size: 16px; flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .send-btn.active { cursor: pointer; color: white; }
+
+  /* Markdown */
+  .md h1 { color: #e0f0ff; font-size: 16px; margin: 16px 0 10px; }
+  .md h2 { color: #c0d8ff; font-size: 14px; margin: 14px 0 8px; }
+  .md h3 { color: #a0c0f0; font-size: 13px; margin: 12px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .md p { margin: 4px 0; }
+  .md code { background: #1a1a2e; padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #a0d0ff; }
+  .md pre { background: #080810; padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 10px 0; }
+  .md pre code { background: none; padding: 0; font-size: 12px; color: #c0d0e8; }
+  .md ul, .md ol { padding-left: 16px; margin: 6px 0; }
+  .md li { margin: 3px 0; line-height: 1.6; }
+  .md blockquote { border-left: 3px solid #2a5090; padding: 6px 12px; background: #0e1420; margin: 8px 0; color: #8090b0; font-style: italic; border-radius: 0 4px 4px 0; }
+  .md strong { color: #c8d8ff; }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  .copy-btn { background: #1e2035; border: 1px solid #2e3050; border-radius: 6px; padding: 3px 10px; color: var(--text2); font-size: 11px; cursor: pointer; float: right; margin-top: 4px; font-family: inherit; }
+  .copy-btn:hover { background: #282a45; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🟣</div>
+  <div class="header-info">
+    <div class="header-title">ALESCO <span style="color:#3a6adf">×</span> ODOO AGENT</div>
+    <div class="header-sub" id="header-sub">aeca.odoo.com · st_aeca · v18 Enterprise</div>
+  </div>
+  <div class="status">
+    <div class="status-dot" id="status-dot" style="background:#F59E0B"></div>
+    <span id="status-text" style="color:#F59E0B">Verificando...</span>
+  </div>
+</div>
+
+<div class="modes" id="modes"></div>
+<div class="chat" id="chat"></div>
+
+<div class="input-area">
+  <textarea id="input" rows="2" placeholder="Escribe tu consulta..."></textarea>
+  <button class="send-btn" id="send-btn">↑</button>
+</div>
+
+<script>
+const WORKER_URL = "https://alesco-odoo-proxy.rachel-duarte.workers.dev";
+
+const MODES = [
+  { id: "live",  icon: "🔴", label: "Odoo en vivo", color: "#EF4444", placeholder: "Ej: Muéstrame las últimas 10 ventas...", quick: ["Últimas 10 ventas", "Facturas pendientes de cobro", "Productos con stock bajo", "Órdenes de compra del mes"] },
+  { id: "guide", icon: "📋", label: "Guía de usuario", color: "#3B82F6", placeholder: "Ej: ¿Cómo crear una factura de cliente?", quick: ["¿Cómo crear una factura?", "¿Cómo registrar un pago?", "¿Cómo hacer ajuste de inventario?", "¿Cómo crear una orden de compra?"] },
+  { id: "dev",   icon: "⚙️", label: "Documentar módulo", color: "#8B5CF6", placeholder: "Ej: Documenta el módulo alesco_claude_bridge", quick: ["Documenta alesco_claude_bridge", "¿Cómo crear un módulo en Odoo 18?", "Pruebas unitarias en Odoo", "¿Cómo extender sale.order?"] },
+  { id: "log",   icon: "🔍", label: "Analizar log", color: "#F59E0B", placeholder: "Pega aquí el error o log de Odoo...", quick: ["DeprecationWarning wimpy_password", "Error al instalar módulo", "Odoo se reinicia cada 5 minutos", "Error de permisos PostgreSQL"] },
+  { id: "team",  icon: "👥", label: "Doc para equipo", color: "#10B981", placeholder: "Ej: Guía técnica de retenciones para Geraldo", quick: ["Guía retenciones para Geraldo", "Checklist implementación Tortas Gabi", "Resumen módulos instalados AECA", "Manual migración v16 a v18"] },
+];
+
+let currentMode = MODES[0];
+let history = [];
+let loading = false;
+
+// Render modes
+const modesEl = document.getElementById("modes");
+MODES.forEach(m => {
+  const btn = document.createElement("button");
+  btn.className = "mode-btn" + (m.id === currentMode.id ? " active" : "");
+  btn.id = "mode-" + m.id;
+  btn.innerHTML = `<span>${m.icon}</span><span>${m.label}</span>`;
+  btn.style.borderBottomColor = m.id === currentMode.id ? m.color : "transparent";
+  btn.onclick = () => switchMode(m);
+  modesEl.appendChild(btn);
+});
+
+function switchMode(m) {
+  document.getElementById("mode-" + currentMode.id).className = "mode-btn";
+  document.getElementById("mode-" + currentMode.id).style.borderBottomColor = "transparent";
+  currentMode = m;
+  document.getElementById("mode-" + m.id).className = "mode-btn active";
+  document.getElementById("mode-" + m.id).style.borderBottomColor = m.color;
+  document.getElementById("input").placeholder = m.placeholder;
+  history = [];
+  clearChat();
+  addMessage("assistant", `${m.icon} **Modo: ${m.label}** activado. ¿En qué te ayudo?`);
+  showQuickActions(m);
+}
+
+function clearChat() {
+  document.getElementById("chat").innerHTML = "";
+}
+
+function renderMarkdown(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/^```[\w]*\n([\s\S]*?)```$/gm, '<pre><code>$1</code></pre>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/^---$/gm, '<hr>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hupbl])(.+)$/gm, '<p>$1</p>');
+}
+
+function addMessage(role, content, type, data) {
+  const chat = document.getElementById("chat");
+  const row = document.createElement("div");
+  row.className = "msg-row" + (role === "user" ? " user" : "");
+
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.style.background = role === "user" ? "#121220" : `${currentMode.color}22`;
+  avatar.style.border = role === "user" ? "1px solid #242438" : `1px solid ${currentMode.color}44`;
+  avatar.textContent = role === "user" ? "👤" : currentMode.icon;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  bubble.style.borderColor = type === "error" ? "#3a1010" : type === "success" ? "#103a18" : "#181828";
+  bubble.style.background = type === "error" ? "#1a0808" : type === "success" ? "#081a0e" : "#0e0e1e";
+
+  if (role === "user") {
+    bubble.style.borderRadius = "12px 12px 4px 12px";
+    bubble.style.maxWidth = "65%";
+    bubble.style.background = `${currentMode.color}18`;
+    bubble.style.borderColor = `${currentMode.color}44`;
+    bubble.textContent = content;
+  } else if (type === "data" && data) {
+    const label = document.createElement("div");
+    label.className = "data-label";
+    label.textContent = `📊 ${data.model} — ${data.count} registro${data.count !== 1 ? "s" : ""}`;
+    bubble.appendChild(label);
+
+    if (data.data.length > 0) {
+      const tableWrap = document.createElement("div");
+      tableWrap.className = "data-table";
+      const keys = Object.keys(data.data[0]);
+      let html = "<table><thead><tr>" + keys.map(k => `<th>${k}</th>`).join("") + "</tr></thead><tbody>";
+      data.data.forEach((row, i) => {
+        html += "<tr>";
+        keys.forEach(k => {
+          let v = row[k];
+          if (Array.isArray(v)) v = v[1] ?? v[0];
+          if (v === false || v === null || v === undefined) v = "—";
+          html += `<td title="${String(v)}">${String(v)}</td>`;
+        });
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      tableWrap.innerHTML = html;
+      bubble.appendChild(tableWrap);
+    }
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "copy-btn";
+    copyBtn.textContent = "Copiar JSON";
+    copyBtn.onclick = () => { navigator.clipboard.writeText(JSON.stringify(data.data, null, 2)); copyBtn.textContent = "✓ Copiado"; setTimeout(() => copyBtn.textContent = "Copiar JSON", 2000); };
+    bubble.appendChild(copyBtn);
+  } else {
+    const md = document.createElement("div");
+    md.className = "md";
+    md.innerHTML = renderMarkdown(content);
+    bubble.appendChild(md);
+
+    if (content.length > 200) {
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "copy-btn";
+      copyBtn.textContent = "Copiar";
+      copyBtn.onclick = () => { navigator.clipboard.writeText(content); copyBtn.textContent = "✓"; setTimeout(() => copyBtn.textContent = "Copiar", 2000); };
+      bubble.appendChild(copyBtn);
+    }
+  }
+
+  if (role === "user") {
+    row.appendChild(bubble);
+    row.appendChild(avatar);
+  } else {
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+  }
+
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  const chat = document.getElementById("chat");
+  const row = document.createElement("div");
+  row.className = "msg-row";
+  row.id = "typing-row";
+
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.style.background = `${currentMode.color}22`;
+  avatar.style.border = `1px solid ${currentMode.color}44`;
+  avatar.textContent = currentMode.icon;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  bubble.innerHTML = `<div class="typing">
+    <div class="typing-dot" style="background:${currentMode.color}"></div>
+    <div class="typing-dot" style="background:${currentMode.color}"></div>
+    <div class="typing-dot" style="background:${currentMode.color}"></div>
+  </div>`;
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById("typing-row");
+  if (el) el.remove();
+}
+
+function showQuickActions(m) {
+  const chat = document.getElementById("chat");
+  const wrap = document.createElement("div");
+  wrap.className = "quick-actions";
+  wrap.id = "quick-actions";
+  const label = document.createElement("div");
+  label.className = "quick-label";
+  label.textContent = "ACCIONES RÁPIDAS";
+  wrap.appendChild(label);
+  m.quick.forEach(q => {
+    const btn = document.createElement("button");
+    btn.className = "quick-btn";
+    btn.innerHTML = `<span class="quick-arrow" style="color:${m.color}">›</span> ${q}`;
+    btn.onclick = () => sendMessage(q);
+    wrap.appendChild(btn);
+  });
+  chat.appendChild(wrap);
+}
+
+async function sendMessage(text) {
+  const input = document.getElementById("input");
+  const msg = text || input.value.trim();
+  if (!msg || loading) return;
+  input.value = "";
+  updateSendBtn(false);
+
+  // Remove quick actions
+  const qa = document.getElementById("quick-actions");
+  if (qa) qa.remove();
+
+  addMessage("user", msg);
+  history.push({ role: "user", content: msg });
+  loading = true;
+  showTyping();
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: history, mode: currentMode.id }),
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.type === "data") {
+      addMessage("assistant", "", "data", data);
+      history.push({ role: "assistant", content: `[Datos de ${data.model}: ${data.count} registros]` });
+    } else if (data.type === "success") {
+      addMessage("assistant", data.content, "success");
+      history.push({ role: "assistant", content: data.content });
+    } else if (data.type === "error" || data.error) {
+      addMessage("assistant", `❌ ${data.content || data.error}`, "error");
+      history.push({ role: "assistant", content: data.content || data.error });
+    } else {
+      addMessage("assistant", data.content || "Sin respuesta");
+      history.push({ role: "assistant", content: data.content || "" });
+    }
+  } catch (err) {
+    removeTyping();
+    addMessage("assistant", `❌ Error: ${err.message}`, "error");
+  }
+
+  loading = false;
+}
+
+function updateSendBtn(hasText) {
+  const btn = document.getElementById("send-btn");
+  btn.className = "send-btn" + (hasText ? " active" : "");
+  btn.style.background = hasText ? currentMode.color : "#141424";
+}
+
+// Input events
+const inputEl = document.getElementById("input");
+inputEl.addEventListener("input", () => updateSendBtn(inputEl.value.trim().length > 0));
+inputEl.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+document.getElementById("send-btn").addEventListener("click", () => sendMessage());
+
+// Check connection
+async function checkConnection() {
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: "ping" }], mode: "live" }),
+    });
+    const data = await res.json();
+    if (data.type === "text" || data.type === "data" || data.type === "error") {
+      setStatus("ok");
+    } else {
+      setStatus("error");
+    }
+  } catch {
+    setStatus("error");
+  }
+}
+
+function setStatus(s) {
+  const dot = document.getElementById("status-dot");
+  const txt = document.getElementById("status-text");
+  if (s === "ok") { dot.style.background = "#10B981"; txt.style.color = "#10B981"; txt.textContent = "Conectado"; }
+  else { dot.style.background = "#EF4444"; txt.style.color = "#EF4444"; txt.textContent = "Sin conexión"; }
+}
+
+// Init
+addMessage("assistant", `¡Hola Rachel! 👋 Soy tu agente técnico de **Alesco × Odoo**.\n\nConectado directamente a tu instancia. Selecciona un modo y pregunta lo que necesites.`);
+showQuickActions(currentMode);
+checkConnection();
+</script>
+</body>
+</html>
