@@ -3,165 +3,529 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alesco × Odoo Agent</title>
+<title>Alesco · Agente Odoo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #090912;
-    --bg2: #0c0c1a;
-    --bg3: #0e0e1e;
-    --border: #181828;
-    --text: #c0c8e8;
-    --text2: #8090b0;
-    --text3: #404868;
-    --live: #EF4444;
-    --guide: #3B82F6;
-    --dev: #8B5CF6;
-    --log: #F59E0B;
-    --team: #10B981;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', 'Courier New', monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  
-  /* Header */
-  .header { padding: 10px 18px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-  .logo { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#1a3060,#2a1a50); border: 1px solid #2a3060; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-  .header-info { flex: 1; }
-  .header-title { font-weight: 700; font-size: 13px; color: #c8d8ff; letter-spacing: 1px; }
-  .header-sub { font-size: 10px; color: var(--text3); letter-spacing: 0.5px; }
-  .status { display: flex; align-items: center; gap: 6px; font-size: 10px; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; }
-  
-  /* Modes */
-  .modes { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); overflow-x: auto; }
-  .mode-btn { flex: 1; min-width: 90px; padding: 9px 6px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text3); font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.15s; font-family: inherit; }
-  .mode-btn.active { background: var(--bg2); color: #e0e8ff; }
-  .mode-btn span:first-child { font-size: 15px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --orange:  #F5A623;
+  --navy:    #1E3A6E;
+  --blue:    #2B5299;
+  --bg:      #080c14;
+  --bg2:     #0b1020;
+  --bg3:     #0e1428;
+  --bg4:     #060810;
+  --border:  #162040;
+  --border2: #1e2e50;
+  --text:    #c8d8f0;
+  --text2:   #7890b8;
+  --text3:   #3a4e6a;
+  --success: #22c55e;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+}
+body { background:var(--bg); color:var(--text); font-family:'Open Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
-  /* Chat */
-  .chat { flex: 1; overflow-y: auto; padding: 14px 18px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-  .chat::-webkit-scrollbar { width: 3px; }
-  .chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  
-  .msg-row { display: flex; gap: 10px; margin-bottom: 18px; align-items: flex-start; }
-  .msg-row.user { justify-content: flex-end; }
-  .msg-avatar { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 2px; }
-  .msg-bubble { max-width: 88%; padding: 10px 14px; border-radius: 12px 12px 12px 4px; border: 1px solid var(--border); background: var(--bg3); font-size: 13px; line-height: 1.7; }
-  .msg-row.user .msg-bubble { border-radius: 12px 12px 4px 12px; max-width: 65%; }
+/* HEADER */
+.header { height:52px; padding:0 18px; background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.logo { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--navy),var(--blue)); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.header-brand { font-family:'Montserrat',sans-serif; font-weight:800; font-size:12px; letter-spacing:1.5px; color:#e0ecff; }
+.header-sep { color:var(--orange); margin:0 2px; }
+.header-project-name { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--orange); }
+.header-info { flex:1; display:flex; align-items:center; gap:10px; }
 
-  /* Table */
-  .data-table { overflow-x: auto; margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  th { padding: 6px 10px; background: #0a0a14; color: var(--text2); text-align: left; font-weight: 600; font-size: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 6px 10px; color: var(--text); border-bottom: 1px solid #141420; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-  tr:nth-child(even) { background: #0b0b16; }
-  .data-label { color: var(--text3); font-size: 10px; margin-bottom: 6px; }
+.project-selector { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.proj-select { background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:5px 10px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:11px; outline:none; cursor:pointer; }
+.proj-select:focus { border-color:var(--orange); }
+.add-proj-btn { background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.3); border-radius:8px; padding:5px 10px; color:var(--orange); font-size:11px; font-family:'Montserrat',sans-serif; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.add-proj-btn:hover { background:rgba(245,166,35,0.2); }
 
-  /* Typing */
-  .typing { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
-  .typing-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
-  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes pulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
+.status-pill { display:flex; align-items:center; gap:5px; background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:10px; font-family:'JetBrains Mono',monospace; cursor:pointer; flex-shrink:0; }
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--warn); }
 
-  /* Quick actions */
-  .quick-actions { margin-top: 10px; }
-  .quick-label { font-size: 9px; color: #282840; margin-bottom: 8px; letter-spacing: 1px; }
-  .quick-btn { display: flex; align-items: center; gap: 8px; width: 100%; background: #0b0b18; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text3); font-size: 12px; cursor: pointer; text-align: left; transition: all 0.15s; margin-bottom: 5px; font-family: inherit; }
-  .quick-btn:hover { background: #0f0f22; color: #8090c0; }
-  .quick-arrow { font-size: 14px; }
+/* MAIN */
+.main { flex:1; display:flex; overflow:hidden; }
 
-  /* Input */
-  .input-area { padding: 10px 14px 14px; border-top: 1px solid var(--border); background: var(--bg); display: flex; gap: 8px; align-items: flex-end; }
-  textarea { flex: 1; background: #0c0c1a; border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 12px; outline: none; resize: none; font-family: inherit; line-height: 1.5; transition: border 0.2s; }
-  textarea:focus { border-color: #3a3a6a; }
-  textarea::placeholder { color: #282840; }
-  .send-btn { width: 40px; height: 40px; border-radius: 9px; border: none; background: #141424; color: #303050; cursor: default; font-size: 16px; flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-  .send-btn.active { cursor: pointer; color: white; }
+/* SIDEBAR */
+.sidebar { width:220px; flex-shrink:0; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.sidebar-section { padding:10px 14px 6px; }
+.sidebar-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+.sidebar-btn { display:flex; align-items:center; gap:8px; width:100%; background:transparent; border:none; border-radius:7px; padding:7px 10px; color:var(--text2); font-size:12px; font-family:'Open Sans',sans-serif; cursor:pointer; text-align:left; transition:all 0.15s; margin-bottom:2px; }
+.sidebar-btn:hover { background:rgba(43,82,153,0.15); color:var(--text); }
+.sidebar-btn.active { background:rgba(245,166,35,0.08); color:var(--orange); border:1px solid rgba(245,166,35,0.2); }
+.sidebar-icon { font-size:14px; flex-shrink:0; }
+.sidebar-divider { border:none; border-top:1px solid var(--border); margin:6px 0; }
 
-  /* Markdown */
-  .md h1 { color: #e0f0ff; font-size: 16px; margin: 16px 0 10px; }
-  .md h2 { color: #c0d8ff; font-size: 14px; margin: 14px 0 8px; }
-  .md h3 { color: #a0c0f0; font-size: 13px; margin: 12px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-  .md p { margin: 4px 0; }
-  .md code { background: #1a1a2e; padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #a0d0ff; }
-  .md pre { background: #080810; padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 10px 0; }
-  .md pre code { background: none; padding: 0; font-size: 12px; color: #c0d0e8; }
-  .md ul, .md ol { padding-left: 16px; margin: 6px 0; }
-  .md li { margin: 3px 0; line-height: 1.6; }
-  .md blockquote { border-left: 3px solid #2a5090; padding: 6px 12px; background: #0e1420; margin: 8px 0; color: #8090b0; font-style: italic; border-radius: 0 4px 4px 0; }
-  .md strong { color: #c8d8ff; }
-  .md hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+/* Safe/Danger badges in sidebar */
+.op-badge { margin-left:auto; font-size:9px; font-family:'JetBrains Mono',monospace; padding:1px 6px; border-radius:4px; }
+.op-safe { background:rgba(34,197,94,0.1); color:var(--success); }
+.op-warn { background:rgba(245,158,11,0.1); color:var(--warn); }
+.op-danger { background:rgba(239,68,68,0.1); color:var(--danger); }
 
-  .copy-btn { background: #1e2035; border: 1px solid #2e3050; border-radius: 6px; padding: 3px 10px; color: var(--text2); font-size: 11px; cursor: pointer; float: right; margin-top: 4px; font-family: inherit; }
-  .copy-btn:hover { background: #282a45; }
+/* Quick reference */
+.quick-ref { flex:1; overflow-y:auto; padding:10px 14px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.ref-chip { display:inline-block; background:rgba(30,58,110,0.3); border:1px solid var(--border); border-radius:12px; padding:3px 9px; font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--text2); margin:2px; cursor:pointer; transition:all 0.1s; }
+.ref-chip:hover { background:rgba(43,82,153,0.3); color:var(--text); border-color:var(--border2); }
+
+/* CHAT */
+.chat-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.chat { flex:1; overflow-y:auto; padding:16px 20px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.chat::-webkit-scrollbar { width:3px; }
+.chat::-webkit-scrollbar-thumb { background:var(--border2); }
+
+.msg-row { display:flex; gap:10px; margin-bottom:18px; align-items:flex-start; animation:fadeUp 0.2s ease; }
+.msg-row.user { justify-content:flex-end; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.msg-avatar { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:2px; }
+.msg-bubble { max-width:84%; padding:11px 15px; border-radius:14px 14px 14px 4px; border:1px solid var(--border); background:var(--bg3); font-size:13px; line-height:1.75; }
+.msg-row.user .msg-bubble { border-radius:14px 14px 4px 14px; max-width:70%; background:rgba(30,58,110,0.35); border-color:rgba(43,82,153,0.5); }
+
+/* CONFIRMATION BUBBLE */
+.confirm-bubble { border-radius:12px; padding:14px 16px; border:1px solid; margin-bottom:18px; animation:fadeUp 0.2s ease; }
+.confirm-bubble.write { border-color:rgba(245,158,11,0.4); background:rgba(245,158,11,0.06); }
+.confirm-bubble.create { border-color:rgba(34,197,94,0.35); background:rgba(34,197,94,0.05); }
+.confirm-bubble.delete { border-color:rgba(239,68,68,0.5); background:rgba(239,68,68,0.08); }
+.confirm-title { font-family:'Montserrat',sans-serif; font-weight:800; font-size:12px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.confirm-bubble.write .confirm-title { color:var(--warn); }
+.confirm-bubble.create .confirm-title { color:var(--success); }
+.confirm-bubble.delete .confirm-title { color:var(--danger); }
+.confirm-detail { font-size:12px; color:var(--text2); margin-bottom:12px; line-height:1.6; }
+.confirm-model { font-family:'JetBrains Mono',monospace; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; font-size:11px; color:var(--text); margin-bottom:10px; white-space:pre-wrap; word-break:break-all; }
+.confirm-warning { font-size:11px; color:var(--danger); background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:8px 10px; margin-bottom:12px; }
+.confirm-btns { display:flex; gap:8px; }
+.confirm-yes { flex:1; padding:8px; border-radius:8px; border:none; font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; cursor:pointer; transition:all 0.15s; }
+.confirm-bubble.write .confirm-yes { background:rgba(245,158,11,0.2); color:var(--warn); border:1px solid rgba(245,158,11,0.4); }
+.confirm-bubble.create .confirm-yes { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.35); }
+.confirm-bubble.delete .confirm-yes { background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.4); }
+.confirm-yes:hover { filter:brightness(1.3); }
+.confirm-no { flex:1; padding:8px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--text2); font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; cursor:pointer; transition:all 0.15s; }
+.confirm-no:hover { background:rgba(255,255,255,0.05); color:var(--text); }
+
+/* DELETE double-confirm */
+.delete-confirm-input { width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:7px 10px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px; outline:none; margin-bottom:10px; }
+.delete-confirm-input:focus { border-color:var(--danger); }
+.delete-confirm-input::placeholder { color:var(--text3); }
+
+/* DATA TABLE */
+.data-wrap { margin-top:6px; }
+.data-label { font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.data-count { background:rgba(245,166,35,0.12); color:var(--orange); padding:1px 7px; border-radius:10px; font-size:10px; font-weight:600; font-family:'Montserrat',monospace; }
+.data-table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); }
+.data-table-wrap table { width:100%; border-collapse:collapse; font-size:11.5px; }
+.data-table-wrap th { padding:6px 10px; background:var(--bg4); color:var(--text2); text-align:left; font-family:'Montserrat',sans-serif; font-weight:700; font-size:9.5px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border2); white-space:nowrap; }
+.data-table-wrap td { padding:6px 10px; border-bottom:1px solid var(--border); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.data-table-wrap tr:last-child td { border-bottom:none; }
+.data-table-wrap tr:hover td { background:rgba(43,82,153,0.08); }
+.val-paid { color:var(--success); font-weight:600; }
+.val-overdue { color:var(--danger); font-weight:600; }
+.val-partial { color:var(--warn); font-weight:600; }
+.val-draft { color:var(--text3); }
+
+/* MARKDOWN */
+.md h1 { font-family:'Montserrat',sans-serif; font-weight:800; color:#e8f0ff; font-size:15px; margin:14px 0 8px; }
+.md h2 { font-family:'Montserrat',sans-serif; font-weight:700; color:#c8dcff; font-size:13.5px; margin:12px 0 6px; }
+.md h3 { font-family:'Montserrat',sans-serif; font-weight:600; color:var(--orange); font-size:11.5px; margin:10px 0 5px; text-transform:uppercase; letter-spacing:0.5px; }
+.md p { margin:5px 0; }
+.md strong { color:#e0ecff; font-family:'Montserrat',sans-serif; font-weight:700; }
+.md em { color:var(--orange); font-style:normal; }
+.md code { background:rgba(43,82,153,0.2); padding:1px 6px; border-radius:4px; font-size:11.5px; color:#90c0ff; font-family:'JetBrains Mono',monospace; }
+.md pre { background:var(--bg4); padding:12px 14px; border-radius:8px; overflow-x:auto; border:1px solid var(--border); margin:8px 0; }
+.md pre code { background:none; padding:0; color:#b0c8e8; }
+.md ul,.md ol { padding-left:18px; margin:5px 0; }
+.md li { margin:3px 0; }
+.md blockquote { border-left:3px solid var(--orange); padding:6px 12px; background:rgba(245,166,35,0.05); margin:8px 0; color:var(--text2); border-radius:0 6px 6px 0; }
+.md hr { border:none; border-top:1px solid var(--border); margin:12px 0; }
+
+/* COPY BTN */
+.copy-btn { background:rgba(43,82,153,0.12); border:1px solid var(--border2); border-radius:5px; padding:2px 9px; color:var(--text2); font-size:10px; cursor:pointer; float:right; margin-top:5px; font-family:'JetBrains Mono',monospace; }
+.copy-btn:hover { background:rgba(43,82,153,0.25); }
+
+/* TYPING */
+.typing { display:flex; gap:5px; align-items:center; padding:4px 0; }
+.typing-dot { width:6px; height:6px; border-radius:50%; background:var(--orange); animation:pulse 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2){animation-delay:.2s} .typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+/* INPUT */
+.input-area { padding:10px 16px 14px; border-top:1px solid var(--border); background:var(--bg); display:flex; gap:8px; align-items:flex-end; flex-shrink:0; }
+.input-wrap { flex:1; position:relative; }
+textarea { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:9px 12px 9px 38px; color:var(--text); font-size:13px; outline:none; resize:none; font-family:'Open Sans',sans-serif; line-height:1.5; transition:border 0.2s; }
+textarea:focus { border-color:var(--border2); }
+textarea::placeholder { color:var(--text3); }
+.input-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; color:var(--text3); }
+.send-btn { width:40px; height:40px; border-radius:10px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:default; font-size:15px; flex-shrink:0; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+.send-btn.active { cursor:pointer; background:var(--orange); color:var(--bg); border-color:var(--orange); }
+
+/* CHIPS */
+.chip-row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 2px; }
+.chip { background:rgba(30,58,110,0.3); border:1px solid var(--border2); border-radius:20px; padding:4px 12px; font-size:11px; color:var(--text2); cursor:pointer; font-family:'Open Sans',sans-serif; transition:all 0.15s; }
+.chip:hover { background:rgba(43,82,153,0.3); color:#c0d8ff; border-color:var(--blue); }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:100; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border2); border-radius:14px; padding:24px; width:420px; max-width:90vw; }
+.modal-title { font-family:'Montserrat',sans-serif; font-weight:800; font-size:14px; color:#e0ecff; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.modal input, .modal select { width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:9px 12px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px; outline:none; margin-bottom:10px; }
+.modal input:focus,.modal select:focus { border-color:var(--orange); }
+.modal label { font-size:11px; font-family:'Montserrat',sans-serif; font-weight:600; color:var(--text2); display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.modal-btns { display:flex; gap:8px; margin-top:6px; }
+.modal-save { flex:1; padding:10px; border:none; border-radius:8px; background:var(--orange); color:var(--bg); font-family:'Montserrat',sans-serif; font-weight:800; font-size:12px; cursor:pointer; letter-spacing:0.5px; }
+.modal-cancel { flex:1; padding:10px; border:1px solid var(--border2); border-radius:8px; background:transparent; color:var(--text2); font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; cursor:pointer; }
+.modal-note { font-size:11px; color:var(--text3); margin-top:8px; line-height:1.5; }
+
+/* CTX bar */
+.ctx-bar { display:flex; align-items:center; gap:8px; padding:5px 18px; background:rgba(30,58,110,0.1); border-bottom:1px solid var(--border); font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.ctx-bar-project { color:var(--orange); font-weight:600; }
+.ctx-clear { margin-left:auto; background:transparent; border:1px solid var(--border); border-radius:5px; padding:2px 8px; font-size:10px; color:var(--text3); cursor:pointer; font-family:'JetBrains Mono',monospace; transition:all 0.15s; }
+.ctx-clear:hover { border-color:var(--danger); color:var(--danger); }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <div class="logo">🟣</div>
+  <div class="logo">🤖</div>
   <div class="header-info">
-    <div class="header-title">ALESCO <span style="color:#3a6adf">×</span> ODOO AGENT</div>
-    <div class="header-sub" id="header-sub">aeca.odoo.com · st_aeca · v18 Enterprise</div>
+    <span class="header-brand">ALESCO</span>
+    <span class="header-sep">×</span>
+    <span class="header-brand">ODOO</span>
+    <span style="color:var(--text3);font-size:11px;font-family:'JetBrains Mono',monospace;margin-left:6px;" id="header-project-label"></span>
   </div>
-  <div class="status">
-    <div class="status-dot" id="status-dot" style="background:#F59E0B"></div>
-    <span id="status-text" style="color:#F59E0B">Verificando...</span>
+  <div class="project-selector">
+    <select class="proj-select" id="proj-select" onchange="switchProject()">
+      <option value="">— Selecciona proyecto —</option>
+    </select>
+    <button class="add-proj-btn" onclick="openModal()">+ Proyecto</button>
+  </div>
+  <div class="status-pill" onclick="checkConnection()">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text" style="color:var(--warn)">—</span>
   </div>
 </div>
 
-<div class="modes" id="modes"></div>
-<div class="chat" id="chat"></div>
+<!-- CTX BAR -->
+<div class="ctx-bar" id="ctx-bar">
+  <span>Proyecto:</span>
+  <span class="ctx-bar-project" id="ctx-project">ninguno</span>
+  <span style="margin-left:10px;">Memoria:</span>
+  <span id="ctx-turns">0 turnos</span>
+  <button class="ctx-clear" onclick="clearHistory()">↺ Limpiar contexto</button>
+</div>
 
-<div class="input-area">
-  <textarea id="input" rows="2" placeholder="Escribe tu consulta..."></textarea>
-  <button class="send-btn" id="send-btn">↑</button>
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Operaciones</div>
+      <button class="sidebar-btn" onclick="setMode('query')">
+        <span class="sidebar-icon">🔍</span> Consultar datos
+        <span class="op-badge op-safe">SAFE</span>
+      </button>
+      <button class="sidebar-btn" onclick="setMode('create')">
+        <span class="sidebar-icon">➕</span> Crear registro
+        <span class="op-badge op-warn">CONFIRM</span>
+      </button>
+      <button class="sidebar-btn" onclick="setMode('write')">
+        <span class="sidebar-icon">✏️</span> Modificar datos
+        <span class="op-badge op-warn">CONFIRM</span>
+      </button>
+      <button class="sidebar-btn" onclick="setMode('delete')">
+        <span class="sidebar-icon">🗑️</span> Eliminar registro
+        <span class="op-badge op-danger">2x CONFIRM</span>
+      </button>
+    </div>
+
+    <hr class="sidebar-divider">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Módulos frecuentes</div>
+      <button class="sidebar-btn" onclick="quickAsk('Muéstrame el estado general de ventas: últimas 10 órdenes confirmadas')"><span class="sidebar-icon">💰</span> Ventas</button>
+      <button class="sidebar-btn" onclick="quickAsk('Muéstrame las facturas de cliente pendientes de cobro')"><span class="sidebar-icon">🧾</span> Facturación</button>
+      <button class="sidebar-btn" onclick="quickAsk('¿Cuáles son las órdenes de compra del mes actual?')"><span class="sidebar-icon">🛒</span> Compras</button>
+      <button class="sidebar-btn" onclick="quickAsk('¿Qué productos tienen stock bajo o agotado?')"><span class="sidebar-icon">📦</span> Inventario</button>
+      <button class="sidebar-btn" onclick="quickAsk('Muéstrame los empleados activos y sus departamentos')"><span class="sidebar-icon">👥</span> Recursos Humanos</button>
+      <button class="sidebar-btn" onclick="quickAsk('¿Hay asientos contables sin cuadrar o con error?')"><span class="sidebar-icon">📊</span> Contabilidad</button>
+    </div>
+
+    <hr class="sidebar-divider">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Consultas rápidas</div>
+    </div>
+    <div class="quick-ref" id="quick-ref">
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Clientes activos</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Facturas vencidas</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Stock disponible</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Pagos pendientes</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Órdenes en borrador</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Productos sin precio</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Retenciones del mes</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Conciliación bancaria</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Cuentas por cobrar</span>
+      <span class="ref-chip" onclick="quickAsk(this.textContent)">Proveedores activos</span>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="chat" id="chat"></div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <span class="input-icon" id="input-icon">💬</span>
+        <textarea id="input" rows="2" placeholder="Selecciona un proyecto y escribe tu consulta..."></textarea>
+      </div>
+      <button class="send-btn" id="send-btn">↑</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: NUEVO PROYECTO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">🔧 Configurar Proyecto</div>
+    <label>Nombre del proyecto</label>
+    <input type="text" id="m-name" placeholder="ej: AECA, Tortas Gabi, Restaurante Huacho">
+    <label>URL de Odoo</label>
+    <input type="text" id="m-url" placeholder="https://micliente.odoo.com">
+    <label>Token de autenticación</label>
+    <input type="password" id="m-token" placeholder="alesco-xxxx-claude-token">
+    <label>Entorno</label>
+    <select id="m-env">
+      <option value="production">Producción</option>
+      <option value="staging">Staging / Desarrollo</option>
+    </select>
+    <div class="modal-note">⚠️ El token se guarda solo en esta sesión del navegador. No se envía a ningún servidor externo excepto al Worker de Cloudflare y al Odoo indicado.</div>
+    <div class="modal-btns">
+      <button class="modal-save" onclick="saveProject()">Guardar</button>
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <script>
+// ─────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────
 const WORKER_URL = "https://alesco-odoo-proxy.rachel-duarte.workers.dev";
 
-const MODES = [
-  { id: "live",  icon: "🔴", label: "Odoo en vivo", color: "#EF4444", placeholder: "Ej: Muéstrame las últimas 10 ventas...", quick: ["Últimas 10 ventas", "Facturas pendientes de cobro", "Productos con stock bajo", "Órdenes de compra del mes"] },
-  { id: "guide", icon: "📋", label: "Guía de usuario", color: "#3B82F6", placeholder: "Ej: ¿Cómo crear una factura de cliente?", quick: ["¿Cómo crear una factura?", "¿Cómo registrar un pago?", "¿Cómo hacer ajuste de inventario?", "¿Cómo crear una orden de compra?"] },
-  { id: "dev",   icon: "⚙️", label: "Documentar módulo", color: "#8B5CF6", placeholder: "Ej: Documenta el módulo alesco_claude_bridge", quick: ["Documenta alesco_claude_bridge", "¿Cómo crear un módulo en Odoo 18?", "Pruebas unitarias en Odoo", "¿Cómo extender sale.order?"] },
-  { id: "log",   icon: "🔍", label: "Analizar log", color: "#F59E0B", placeholder: "Pega aquí el error o log de Odoo...", quick: ["DeprecationWarning wimpy_password", "Error al instalar módulo", "Odoo se reinicia cada 5 minutos", "Error de permisos PostgreSQL"] },
-  { id: "team",  icon: "👥", label: "Doc para equipo", color: "#10B981", placeholder: "Ej: Guía técnica de retenciones para Geraldo", quick: ["Guía retenciones para Geraldo", "Checklist implementación Tortas Gabi", "Resumen módulos instalados AECA", "Manual migración v16 a v18"] },
-];
-
-let currentMode = MODES[0];
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+let projects = JSON.parse(localStorage.getItem('alesco_projects') || '[]');
+let currentProject = null;
 let history = [];
 let loading = false;
+let currentMode = 'query';
+let pendingAction = null; // { config, resolve }
 
-// Render modes
-const modesEl = document.getElementById("modes");
-MODES.forEach(m => {
-  const btn = document.createElement("button");
-  btn.className = "mode-btn" + (m.id === currentMode.id ? " active" : "");
-  btn.id = "mode-" + m.id;
-  btn.innerHTML = `<span>${m.icon}</span><span>${m.label}</span>`;
-  btn.style.borderBottomColor = m.id === currentMode.id ? m.color : "transparent";
-  btn.onclick = () => switchMode(m);
-  modesEl.appendChild(btn);
-});
+const MODE_ICONS   = { query:'💬', create:'➕', write:'✏️', delete:'🗑️' };
+const MODE_LABELS  = { query:'Consulta', create:'Crear', write:'Modificar', delete:'Eliminar' };
 
-function switchMode(m) {
-  document.getElementById("mode-" + currentMode.id).className = "mode-btn";
-  document.getElementById("mode-" + currentMode.id).style.borderBottomColor = "transparent";
+// ─────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────
+renderProjectList();
+showWelcome();
+
+function showWelcome() {
+  addMsg('assistant', `Hola 👋 Soy tu agente Odoo de **Alesco Perú**.
+
+Puedo **consultar, crear, modificar** y —con doble confirmación— **eliminar** registros en cualquier instancia Odoo.
+
+Para empezar, **agrega o selecciona un proyecto** con el selector de arriba. Cada proyecto tiene su propia URL y token de conexión.`);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PROYECTOS
+// ─────────────────────────────────────────────────────────────────
+function renderProjectList() {
+  const sel = document.getElementById('proj-select');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Selecciona proyecto —</option>';
+  projects.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${p.env === 'staging' ? '🔶' : '🟢'} ${p.name}`;
+    sel.appendChild(opt);
+  });
+  if (current !== '') sel.value = current;
+}
+
+function switchProject() {
+  const idx = parseInt(document.getElementById('proj-select').value);
+  if (isNaN(idx)) { currentProject = null; updateCtxBar(); return; }
+  currentProject = projects[idx];
+  clearHistory(true);
+  updateCtxBar();
+  checkConnection();
+  addMsg('assistant', `✅ Conectado a **${currentProject.name}** (${currentProject.url})\n\n¿En qué te ayudo?`);
+  const chips = document.createElement('div');
+  chips.className = 'chip-row'; chips.id = 'welcome-chips';
+  ['Estado general', 'Facturas pendientes', 'Stock bajo', 'Últimas ventas'].forEach(c => {
+    const chip = document.createElement('button');
+    chip.className = 'chip'; chip.textContent = c;
+    chip.onclick = () => { chips.remove(); sendMessage(c); };
+    chips.appendChild(chip);
+  });
+  document.getElementById('chat').appendChild(chips);
+}
+
+function openModal(editIdx) {
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-url').value = '';
+  document.getElementById('m-token').value = '';
+  document.getElementById('m-env').value = 'production';
+  if (editIdx !== undefined) {
+    const p = projects[editIdx];
+    document.getElementById('m-name').value = p.name;
+    document.getElementById('m-url').value = p.url;
+    document.getElementById('m-token').value = p.token;
+    document.getElementById('m-env').value = p.env;
+    document.getElementById('modal').dataset.editIdx = editIdx;
+  } else {
+    delete document.getElementById('modal').dataset.editIdx;
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function saveProject() {
+  const name  = document.getElementById('m-name').value.trim();
+  const url   = document.getElementById('m-url').value.trim().replace(/\/$/, '');
+  const token = document.getElementById('m-token').value.trim();
+  const env   = document.getElementById('m-env').value;
+  if (!name || !url || !token) { alert('Completa todos los campos'); return; }
+  const proj = { name, url, token, env };
+  const editIdx = document.getElementById('modal').dataset.editIdx;
+  if (editIdx !== undefined) {
+    projects[parseInt(editIdx)] = proj;
+  } else {
+    projects.push(proj);
+  }
+  localStorage.setItem('alesco_projects', JSON.stringify(projects));
+  renderProjectList();
+  closeModal();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// MODE
+// ─────────────────────────────────────────────────────────────────
+function setMode(m) {
   currentMode = m;
-  document.getElementById("mode-" + m.id).className = "mode-btn active";
-  document.getElementById("mode-" + m.id).style.borderBottomColor = m.color;
-  document.getElementById("input").placeholder = m.placeholder;
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('input-icon').textContent = MODE_ICONS[m];
+  const placeholders = {
+    query:  'Pregunta sobre cualquier dato de Odoo...',
+    create: 'Ej: Crea un cliente llamado Empresa XYZ con email...',
+    write:  'Ej: Cambia el precio del producto X a 350...',
+    delete: '⚠️ Ej: Elimina el producto de prueba TEST...',
+  };
+  document.getElementById('input').placeholder = placeholders[m];
+  if (m === 'delete') {
+    document.getElementById('input').style.borderColor = 'rgba(239,68,68,0.4)';
+  } else {
+    document.getElementById('input').style.borderColor = '';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CONTEXT
+// ─────────────────────────────────────────────────────────────────
+function clearHistory(silent) {
   history = [];
-  clearChat();
-  addMessage("assistant", `${m.icon} **Modo: ${m.label}** activado. ¿En qué te ayudo?`);
-  showQuickActions(m);
+  if (!silent) addMsg('assistant', '🔄 Contexto limpiado. Podemos empezar de nuevo.');
+  updateCtxBar();
 }
 
-function clearChat() {
-  document.getElementById("chat").innerHTML = "";
+function updateCtxBar() {
+  document.getElementById('ctx-project').textContent = currentProject ? currentProject.name : 'ninguno';
+  const turns = Math.floor(history.length / 2);
+  document.getElementById('ctx-turns').textContent = `${turns} turno${turns !== 1 ? 's' : ''}`;
 }
 
+// ─────────────────────────────────────────────────────────────────
+// QUICK ACTIONS
+// ─────────────────────────────────────────────────────────────────
+function quickAsk(q) {
+  setMode('query');
+  sendMessage(q);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CONFIRMATION SYSTEM
+// ─────────────────────────────────────────────────────────────────
+function showConfirmation(actionType, actionConfig) {
+  return new Promise((resolve) => {
+    const chat = document.getElementById('chat');
+    const wrap = document.createElement('div');
+    wrap.className = `confirm-bubble ${actionType}`;
+
+    const icons  = { write:'⚠️', create:'✅', delete:'🛑' };
+    const labels = { write:'Confirmar modificación', create:'Confirmar creación', delete:'CONFIRMAR ELIMINACIÓN' };
+
+    let detailHtml = `<div class="confirm-model">${formatActionDetail(actionConfig)}</div>`;
+
+    let deleteInputHtml = '';
+    if (actionType === 'delete') {
+      detailHtml += `<div class="confirm-warning">🛑 Esta acción es <strong>irreversible</strong>. Los registros eliminados no se pueden recuperar desde esta interfaz. Verifica primero que no hay dependencias.</div>`;
+      deleteInputHtml = `<input class="delete-confirm-input" id="delete-confirm-input" placeholder='Escribe "ELIMINAR" para confirmar'>`;
+    }
+
+    wrap.innerHTML = `
+      <div class="confirm-title">${icons[actionType]} ${labels[actionType]}</div>
+      <div class="confirm-detail">El agente quiere ejecutar la siguiente operación en <strong>${currentProject?.name || 'Odoo'}</strong>:</div>
+      ${detailHtml}
+      ${deleteInputHtml}
+      <div class="confirm-btns">
+        <button class="confirm-yes" id="confirm-yes-btn">
+          ${actionType === 'delete' ? '🗑️ Sí, ELIMINAR' : actionType === 'create' ? '✅ Sí, crear' : '✏️ Sí, modificar'}
+        </button>
+        <button class="confirm-no" id="confirm-no-btn">Cancelar</button>
+      </div>`;
+
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+
+    wrap.querySelector('#confirm-yes-btn').onclick = () => {
+      if (actionType === 'delete') {
+        const val = document.getElementById('delete-confirm-input')?.value?.trim();
+        if (val !== 'ELIMINAR') {
+          document.getElementById('delete-confirm-input').style.borderColor = 'var(--danger)';
+          document.getElementById('delete-confirm-input').placeholder = '⚠️ Debes escribir exactamente: ELIMINAR';
+          return;
+        }
+      }
+      wrap.remove();
+      resolve(true);
+    };
+    wrap.querySelector('#confirm-no-btn').onclick = () => {
+      wrap.remove();
+      resolve(false);
+    };
+  });
+}
+
+function formatActionDetail(config) {
+  const lines = [];
+  if (config.model)  lines.push(`modelo:  ${config.model}`);
+  if (config.method) lines.push(`método:  ${config.method}`);
+  if (config.domain && config.domain.length) lines.push(`filtro:  ${JSON.stringify(config.domain)}`);
+  if (config.ids && config.ids.length)       lines.push(`IDs:     [${config.ids.join(', ')}]`);
+  if (config.values && Object.keys(config.values).length) lines.push(`valores: ${JSON.stringify(config.values, null, 2)}`);
+  if (config.limit)  lines.push(`límite:  ${config.limit}`);
+  return lines.join('\n');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────
 function renderMarkdown(text) {
   return text
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -174,231 +538,247 @@ function renderMarkdown(text) {
     .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
     .replace(/^---$/gm, '<hr>')
     .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/^[•\-] (.+)$/gm, '<li>$1</li>')
     .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[hupbl])(.+)$/gm, '<p>$1</p>');
+    .replace(/\n\n+/g, '</p><p>')
+    .replace(/^(?!<[hupblico])(.+)$/gm, '<p>$1</p>');
 }
 
-function addMessage(role, content, type, data) {
-  const chat = document.getElementById("chat");
-  const row = document.createElement("div");
-  row.className = "msg-row" + (role === "user" ? " user" : "");
+function addMsg(role, content, type, data) {
+  const chat = document.getElementById('chat');
+  const row  = document.createElement('div');
+  row.className = 'msg-row' + (role === 'user' ? ' user' : '');
 
-  const avatar = document.createElement("div");
-  avatar.className = "msg-avatar";
-  avatar.style.background = role === "user" ? "#121220" : `${currentMode.color}22`;
-  avatar.style.border = role === "user" ? "1px solid #242438" : `1px solid ${currentMode.color}44`;
-  avatar.textContent = role === "user" ? "👤" : currentMode.icon;
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  if (role === 'user') {
+    avatar.style.cssText = 'background:rgba(43,82,153,0.2);border:1px solid rgba(43,82,153,0.4);';
+    avatar.textContent = '👤';
+  } else {
+    avatar.style.cssText = 'background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);';
+    avatar.textContent = '🤖';
+  }
 
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble";
-  bubble.style.borderColor = type === "error" ? "#3a1010" : type === "success" ? "#103a18" : "#181828";
-  bubble.style.background = type === "error" ? "#1a0808" : type === "success" ? "#081a0e" : "#0e0e1e";
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
 
-  if (role === "user") {
-    bubble.style.borderRadius = "12px 12px 4px 12px";
-    bubble.style.maxWidth = "65%";
-    bubble.style.background = `${currentMode.color}18`;
-    bubble.style.borderColor = `${currentMode.color}44`;
+  if (role === 'user') {
     bubble.textContent = content;
-  } else if (type === "data" && data) {
-    const label = document.createElement("div");
-    label.className = "data-label";
-    label.textContent = `📊 ${data.model} — ${data.count} registro${data.count !== 1 ? "s" : ""}`;
-    bubble.appendChild(label);
-
-    if (data.data.length > 0) {
-      const tableWrap = document.createElement("div");
-      tableWrap.className = "data-table";
+  } else if (type === 'data' && data) {
+    // Summary text
+    const sum = document.createElement('div');
+    sum.className = 'md';
+    sum.innerHTML = renderMarkdown(data.summary || `Encontré **${data.count}** registro(s) en \`${data.model}\`.`);
+    bubble.appendChild(sum);
+    // Table
+    if (data.data && data.data.length > 0) {
+      const wrap = document.createElement('div');
+      wrap.className = 'data-wrap';
+      const lbl = document.createElement('div');
+      lbl.className = 'data-label';
+      lbl.innerHTML = `<span>📋 ${data.model}</span><span class="data-count">${data.count} registros</span>`;
+      wrap.appendChild(lbl);
+      const tw = document.createElement('div');
+      tw.className = 'data-table-wrap';
       const keys = Object.keys(data.data[0]);
-      let html = "<table><thead><tr>" + keys.map(k => `<th>${k}</th>`).join("") + "</tr></thead><tbody>";
-      data.data.forEach((row, i) => {
-        html += "<tr>";
+      let html = '<table><thead><tr>' + keys.map(k => `<th>${k}</th>`).join('') + '</tr></thead><tbody>';
+      data.data.forEach(r => {
+        html += '<tr>';
         keys.forEach(k => {
-          let v = row[k];
+          let v = r[k];
           if (Array.isArray(v)) v = v[1] ?? v[0];
-          if (v === false || v === null || v === undefined) v = "—";
-          html += `<td title="${String(v)}">${String(v)}</td>`;
+          if (v === false || v === null || v === undefined) v = '—';
+          const s = String(v);
+          const cls = k === 'payment_state' ? (s==='paid'?'val-paid':s==='not_paid'?'val-overdue':s==='partial'?'val-partial':'') : k==='state'&&s==='draft'?'val-draft':'';
+          html += `<td class="${cls}" title="${s}">${s}</td>`;
         });
-        html += "</tr>";
+        html += '</tr>';
       });
-      html += "</tbody></table>";
-      tableWrap.innerHTML = html;
-      bubble.appendChild(tableWrap);
+      html += '</tbody></table>';
+      tw.innerHTML = html;
+      wrap.appendChild(tw);
+      const cb = document.createElement('button');
+      cb.className = 'copy-btn'; cb.textContent = 'Copiar JSON';
+      cb.onclick = () => { navigator.clipboard.writeText(JSON.stringify(data.data, null, 2)); cb.textContent = '✓'; setTimeout(() => cb.textContent = 'Copiar JSON', 2000); };
+      wrap.appendChild(cb);
+      bubble.appendChild(wrap);
     }
-
-    const copyBtn = document.createElement("button");
-    copyBtn.className = "copy-btn";
-    copyBtn.textContent = "Copiar JSON";
-    copyBtn.onclick = () => { navigator.clipboard.writeText(JSON.stringify(data.data, null, 2)); copyBtn.textContent = "✓ Copiado"; setTimeout(() => copyBtn.textContent = "Copiar JSON", 2000); };
-    bubble.appendChild(copyBtn);
   } else {
-    const md = document.createElement("div");
-    md.className = "md";
-    md.innerHTML = renderMarkdown(content);
+    if (type === 'error')   { bubble.style.borderColor = 'rgba(239,68,68,0.3)';  bubble.style.background = 'rgba(239,68,68,0.05)'; }
+    if (type === 'success') { bubble.style.borderColor = 'rgba(34,197,94,0.3)';  bubble.style.background = 'rgba(34,197,94,0.05)'; }
+    const md = document.createElement('div');
+    md.className = 'md';
+    md.innerHTML = renderMarkdown(content || '');
     bubble.appendChild(md);
-
-    if (content.length > 200) {
-      const copyBtn = document.createElement("button");
-      copyBtn.className = "copy-btn";
-      copyBtn.textContent = "Copiar";
-      copyBtn.onclick = () => { navigator.clipboard.writeText(content); copyBtn.textContent = "✓"; setTimeout(() => copyBtn.textContent = "Copiar", 2000); };
-      bubble.appendChild(copyBtn);
+    if ((content || '').length > 200) {
+      const cb = document.createElement('button');
+      cb.className = 'copy-btn'; cb.textContent = 'Copiar';
+      cb.onclick = () => { navigator.clipboard.writeText(content); cb.textContent = '✓'; setTimeout(() => cb.textContent = 'Copiar', 2000); };
+      bubble.appendChild(cb);
     }
   }
 
-  if (role === "user") {
-    row.appendChild(bubble);
-    row.appendChild(avatar);
-  } else {
-    row.appendChild(avatar);
-    row.appendChild(bubble);
-  }
-
+  if (role === 'user') { row.appendChild(bubble); row.appendChild(avatar); }
+  else { row.appendChild(avatar); row.appendChild(bubble); }
   chat.appendChild(row);
   chat.scrollTop = chat.scrollHeight;
 }
 
 function showTyping() {
-  const chat = document.getElementById("chat");
-  const row = document.createElement("div");
-  row.className = "msg-row";
-  row.id = "typing-row";
-
-  const avatar = document.createElement("div");
-  avatar.className = "msg-avatar";
-  avatar.style.background = `${currentMode.color}22`;
-  avatar.style.border = `1px solid ${currentMode.color}44`;
-  avatar.textContent = currentMode.icon;
-
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble";
-  bubble.innerHTML = `<div class="typing">
-    <div class="typing-dot" style="background:${currentMode.color}"></div>
-    <div class="typing-dot" style="background:${currentMode.color}"></div>
-    <div class="typing-dot" style="background:${currentMode.color}"></div>
-  </div>`;
-
-  row.appendChild(avatar);
-  row.appendChild(bubble);
+  const chat = document.getElementById('chat');
+  const row  = document.createElement('div');
+  row.className = 'msg-row'; row.id = 'typing-row';
+  const av = document.createElement('div');
+  av.className = 'msg-avatar';
+  av.style.cssText = 'background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);';
+  av.textContent = '🤖';
+  const bub = document.createElement('div');
+  bub.className = 'msg-bubble';
+  bub.innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  row.appendChild(av); row.appendChild(bub);
   chat.appendChild(row);
   chat.scrollTop = chat.scrollHeight;
 }
+function removeTyping() { const el = document.getElementById('typing-row'); if (el) el.remove(); }
 
-function removeTyping() {
-  const el = document.getElementById("typing-row");
-  if (el) el.remove();
-}
-
-function showQuickActions(m) {
-  const chat = document.getElementById("chat");
-  const wrap = document.createElement("div");
-  wrap.className = "quick-actions";
-  wrap.id = "quick-actions";
-  const label = document.createElement("div");
-  label.className = "quick-label";
-  label.textContent = "ACCIONES RÁPIDAS";
-  wrap.appendChild(label);
-  m.quick.forEach(q => {
-    const btn = document.createElement("button");
-    btn.className = "quick-btn";
-    btn.innerHTML = `<span class="quick-arrow" style="color:${m.color}">›</span> ${q}`;
-    btn.onclick = () => sendMessage(q);
-    wrap.appendChild(btn);
-  });
-  chat.appendChild(wrap);
-}
-
+// ─────────────────────────────────────────────────────────────────
+// SEND
+// ─────────────────────────────────────────────────────────────────
 async function sendMessage(text) {
-  const input = document.getElementById("input");
-  const msg = text || input.value.trim();
+  const input = document.getElementById('input');
+  const msg   = text || input.value.trim();
   if (!msg || loading) return;
-  input.value = "";
+
+  if (!currentProject) {
+    addMsg('assistant', '⚠️ Primero selecciona o agrega un proyecto con el selector de arriba.', 'error');
+    return;
+  }
+
+  input.value = '';
   updateSendBtn(false);
+  document.getElementById('welcome-chips')?.remove();
 
-  // Remove quick actions
-  const qa = document.getElementById("quick-actions");
-  if (qa) qa.remove();
+  addMsg('user', `[${MODE_LABELS[currentMode]}] ${msg}`);
+  history.push({ role: 'user', content: `[MODO:${currentMode.toUpperCase()}] ${msg}` });
+  if (history.length > 40) history = history.slice(-40);
 
-  addMessage("user", msg);
-  history.push({ role: "user", content: msg });
   loading = true;
   showTyping();
 
   try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: history, mode: currentMode.id }),
+    const res  = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: history,
+        mode: 'agent',
+        project: { url: currentProject.url, token: currentProject.token },
+      }),
     });
 
     const data = await res.json();
     removeTyping();
 
-    if (data.type === "data") {
-      addMessage("assistant", "", "data", data);
-      history.push({ role: "assistant", content: `[Datos de ${data.model}: ${data.count} registros]` });
-    } else if (data.type === "success") {
-      addMessage("assistant", data.content, "success");
-      history.push({ role: "assistant", content: data.content });
-    } else if (data.type === "error" || data.error) {
-      addMessage("assistant", `❌ ${data.content || data.error}`, "error");
-      history.push({ role: "assistant", content: data.content || data.error });
+    // ── MUTATION: needs confirmation ──────────────────────────────
+    if (data.type === 'pending_confirm') {
+      const actionType = data.action; // 'write' | 'create' | 'delete'
+      const confirmed  = await showConfirmation(actionType, data.config);
+
+      if (!confirmed) {
+        addMsg('assistant', '🚫 Operación cancelada por el usuario. No se realizó ningún cambio en Odoo.');
+        history.push({ role: 'assistant', content: 'El usuario canceló la operación. No se realizó ningún cambio.' });
+        loading = false;
+        updateCtxBar();
+        return;
+      }
+
+      // Execute after confirmation
+      showTyping();
+      const execRes  = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'execute',
+          config: data.config,
+          project: { url: currentProject.url, token: currentProject.token },
+        }),
+      });
+      const execData = await execRes.json();
+      removeTyping();
+
+      if (execData.type === 'success') {
+        addMsg('assistant', execData.content || '✅ Operación ejecutada correctamente en Odoo.', 'success');
+        history.push({ role: 'assistant', content: execData.content || 'Operación ejecutada.' });
+      } else {
+        addMsg('assistant', `❌ ${execData.content || execData.error}`, 'error');
+        history.push({ role: 'assistant', content: execData.content || execData.error });
+      }
+
+    // ── DATA RESPONSE ──────────────────────────────────────────────
+    } else if (data.type === 'data') {
+      addMsg('assistant', '', 'data', data);
+      history.push({ role: 'assistant', content: `[Datos de ${data.model}: ${data.count} registros. ${data.summary || ''}]` });
+
+    // ── TEXT RESPONSE ──────────────────────────────────────────────
+    } else if (data.type === 'text') {
+      addMsg('assistant', data.content);
+      history.push({ role: 'assistant', content: data.content });
+
+    } else if (data.type === 'success') {
+      addMsg('assistant', data.content, 'success');
+      history.push({ role: 'assistant', content: data.content });
+
+    } else if (data.type === 'error' || data.error) {
+      addMsg('assistant', `❌ ${data.content || data.error}`, 'error');
+
     } else {
-      addMessage("assistant", data.content || "Sin respuesta");
-      history.push({ role: "assistant", content: data.content || "" });
+      addMsg('assistant', data.content || 'Sin respuesta.');
     }
+
   } catch (err) {
     removeTyping();
-    addMessage("assistant", `❌ Error: ${err.message}`, "error");
+    addMsg('assistant', `❌ No se pudo conectar con el Worker: ${err.message}`, 'error');
   }
 
   loading = false;
+  updateCtxBar();
 }
 
-function updateSendBtn(hasText) {
-  const btn = document.getElementById("send-btn");
-  btn.className = "send-btn" + (hasText ? " active" : "");
-  btn.style.background = hasText ? currentMode.color : "#141424";
+// ─────────────────────────────────────────────────────────────────
+// INPUT HANDLERS
+// ─────────────────────────────────────────────────────────────────
+function updateSendBtn(active) {
+  const btn = document.getElementById('send-btn');
+  btn.className = 'send-btn' + (active ? ' active' : '');
 }
 
-// Input events
-const inputEl = document.getElementById("input");
-inputEl.addEventListener("input", () => updateSendBtn(inputEl.value.trim().length > 0));
-inputEl.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-document.getElementById("send-btn").addEventListener("click", () => sendMessage());
+const inputEl = document.getElementById('input');
+inputEl.addEventListener('input', () => updateSendBtn(inputEl.value.trim().length > 0));
+inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+document.getElementById('send-btn').addEventListener('click', sendMessage);
 
-// Check connection
+// ─────────────────────────────────────────────────────────────────
+// CONNECTION CHECK
+// ─────────────────────────────────────────────────────────────────
 async function checkConnection() {
+  if (!currentProject) return;
   try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: [{ role: "user", content: "ping" }], mode: "live" }),
+    const r = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages:[{role:'user',content:'ping'}], mode:'agent', project:{ url: currentProject.url, token: currentProject.token } }),
     });
-    const data = await res.json();
-    if (data.type === "text" || data.type === "data" || data.type === "error") {
-      setStatus("ok");
-    } else {
-      setStatus("error");
-    }
-  } catch {
-    setStatus("error");
-  }
+    const d = await r.json();
+    setStatus(d && !d.error ? 'ok' : 'error');
+  } catch { setStatus('error'); }
 }
 
 function setStatus(s) {
-  const dot = document.getElementById("status-dot");
-  const txt = document.getElementById("status-text");
-  if (s === "ok") { dot.style.background = "#10B981"; txt.style.color = "#10B981"; txt.textContent = "Conectado"; }
-  else { dot.style.background = "#EF4444"; txt.style.color = "#EF4444"; txt.textContent = "Sin conexión"; }
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  if (s === 'ok') { dot.style.background = '#22c55e'; txt.style.color = '#22c55e'; txt.textContent = currentProject?.env === 'staging' ? '🔶 Staging' : '🟢 Prod'; }
+  else { dot.style.background = '#ef4444'; txt.style.color = '#ef4444'; txt.textContent = 'Sin conexión'; }
 }
-
-// Init
-addMessage("assistant", `¡Hola Rachel! 👋 Soy tu agente técnico de **Alesco × Odoo**.\n\nConectado directamente a tu instancia. Selecciona un modo y pregunta lo que necesites.`);
-showQuickActions(currentMode);
-checkConnection();
 </script>
 </body>
 </html>
